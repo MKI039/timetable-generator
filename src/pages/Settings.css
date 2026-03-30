@@ -1,0 +1,119 @@
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+@media (max-width: 900px) {
+  .settings-grid { grid-template-columns: 1fr; }
+}
+
+.settings-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.settings-card--wide {
+  grid-column: auto;
+}
+
+.settings-card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slot-summary {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-left: 8px;
+}
+
+.days-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.day-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.day-item--inactive {
+  opacity: 0.35;
+}
+
+.day-num {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  width: 18px;
+  text-align: right;
+}
+
+.day-input {
+  flex: 1;
+}
+
+.slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.slot-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--hover-bg);
+  border: 1px solid var(--border);
+}
+
+.slot-row--break {
+  background: rgba(244, 162, 97, 0.06);
+  border-color: rgba(244, 162, 97, 0.2);
+}
+
+.slot-num {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  width: 18px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.slot-label-input {
+  width: 150px;
+  flex-shrink: 0;
+}
+
+.slot-break-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.slot-break-name {
+  flex: 1;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.78rem;
+}

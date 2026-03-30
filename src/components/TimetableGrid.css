@@ -1,0 +1,127 @@
+.tt-grid-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.tt-grid {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 900px;
+  font-size: 0.8rem;
+}
+
+.tt-grid th,
+.tt-grid td {
+  border: 1px solid var(--border);
+  padding: 0;
+  text-align: center;
+}
+
+.tt-grid thead th {
+  background: var(--sidebar-bg);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.72rem;
+  padding: 8px 6px;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+.tt-break-header {
+  background: rgba(244, 162, 97, 0.08) !important;
+  color: var(--accent) !important;
+}
+
+.tt-break-badge {
+  display: block;
+  font-size: 0.62rem;
+  color: var(--accent);
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+.tt-corner {
+  color: var(--text-muted) !important;
+  font-size: 0.7rem !important;
+  width: 80px;
+}
+
+.tt-day-label {
+  background: var(--sidebar-bg);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.78rem;
+  padding: 0 10px;
+  white-space: nowrap;
+  width: 82px;
+}
+
+.tt-cell {
+  height: 62px;
+  width: 110px;
+  max-width: 130px;
+  vertical-align: middle;
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+}
+
+.tt-cell--break {
+  background: rgba(244, 162, 97, 0.06);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  cursor: default;
+}
+
+.tt-cell--empty {
+  background: transparent;
+}
+
+.tt-cell--empty:hover {
+  background: var(--hover-bg);
+}
+
+.tt-cell--filled {
+  background: rgba(99, 179, 237, 0.07);
+}
+
+.tt-cell--filled:hover {
+  background: rgba(99, 179, 237, 0.15);
+}
+
+.tt-cell--conflict {
+  background: rgba(220, 53, 69, 0.12) !important;
+  border-color: rgba(220, 53, 69, 0.4) !important;
+}
+
+.tt-subject {
+  display: block;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  margin-bottom: 3px;
+  line-height: 1.2;
+}
+
+.tt-faculty {
+  display: block;
+  color: var(--accent);
+  font-size: 0.68rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tt-empty-label {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.grid-empty {
+  color: var(--text-muted);
+  padding: 40px;
+  text-align: center;
+  font-size: 0.9rem;
+}
