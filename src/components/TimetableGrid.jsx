@@ -46,10 +46,11 @@ export default function TimetableGrid({ timetable, viewMode = 'class', selectedI
                     return <td key={slot.id} className="tt-cell tt-cell--break">{slot.breakLabel}</td>;
                   }
                   const cell = dayMap?.[day]?.[String(slot.id)];
+                  const isLab = cell?.isLab;
                   return (
                     <td
                       key={slot.id}
-                      className={`tt-cell${cell ? ' tt-cell--filled' : ' tt-cell--empty'}`}
+                      className={`tt-cell${cell ? (isLab ? ' tt-cell--filled tt-cell--lab' : ' tt-cell--filled') : ' tt-cell--empty'}`}
                       onClick={() => {
                         setEditCell({ type: 'class', classId: selectedId, day, slotId: String(slot.id) });
                         setEditData(cell || { subjectId: '', facultyId: '' });
@@ -57,7 +58,10 @@ export default function TimetableGrid({ timetable, viewMode = 'class', selectedI
                     >
                       {cell ? (
                         <>
-                          <span className="tt-subject">{getSubjectName(cell.subjectId)}</span>
+                          <span className="tt-subject">
+                            {getSubjectName(cell.subjectId)}
+                            {isLab && <span className="tt-lab-tag">🔬 Lab</span>}
+                          </span>
                           <span className="tt-faculty">{getFacultyName(cell.facultyId)}</span>
                         </>
                       ) : (
@@ -102,14 +106,18 @@ export default function TimetableGrid({ timetable, viewMode = 'class', selectedI
                     return <td key={slot.id} className="tt-cell tt-cell--break">{slot.breakLabel}</td>;
                   }
                   const cell = dayMap?.[day]?.[String(slot.id)];
+                  const isLab = cell?.isLab;
                   return (
                     <td
                       key={slot.id}
-                      className={`tt-cell${cell ? ' tt-cell--filled' : ' tt-cell--empty'}`}
+                      className={`tt-cell${cell ? (isLab ? ' tt-cell--filled tt-cell--lab' : ' tt-cell--filled') : ' tt-cell--empty'}`}
                     >
                       {cell ? (
                         <>
-                          <span className="tt-subject">{getSubjectName(cell.subjectId)}</span>
+                          <span className="tt-subject">
+                            {getSubjectName(cell.subjectId)}
+                            {isLab && <span className="tt-lab-tag">🔬 Lab</span>}
+                          </span>
                           <span className="tt-faculty">{getClassName(cell.classId)}</span>
                         </>
                       ) : (

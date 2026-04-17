@@ -61,28 +61,68 @@
   color: var(--text-muted);
 }
 
-.tt-list-delete {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 0.75rem;
-  padding: 2px 5px;
-  border-radius: 4px;
+.tt-list-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
   opacity: 0;
   transition: opacity 0.15s;
 }
 
-.tt-list-item:hover .tt-list-delete {
+.tt-list-item:hover .tt-list-actions {
   opacity: 1;
+}
+
+.tt-list-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.72rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.15s;
+  line-height: 1.4;
+}
+
+.tt-list-btn:hover {
+  background: var(--hover-bg);
+  color: var(--text-primary);
+}
+
+.tt-list-btn--warn:hover {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.4);
+}
+
+.tt-list-btn--confirm {
+  color: #48bb78;
+  border-color: rgba(72, 187, 120, 0.4);
+  background: rgba(72, 187, 120, 0.08);
+  font-weight: 700;
+}
+
+.tt-list-btn--confirm:hover {
+  background: rgba(72, 187, 120, 0.2);
+}
+
+.tt-list-delete {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.72rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.15s;
+  line-height: 1.4;
 }
 
 .tt-list-delete:hover {
   background: rgba(220, 53, 69, 0.15);
   color: #dc3545;
+  border-color: rgba(220, 53, 69, 0.4);
 }
 
 .tt-main-panel {
