@@ -153,6 +153,61 @@ body {
   border-color: rgba(220, 53, 69, 0.35);
 }
 
+.btn-icon--warn {
+  color: var(--text-muted);
+}
+
+.btn-icon--warn:hover:not(:disabled) {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.35);
+}
+
+.btn-icon--warn-confirm {
+  color: #48bb78;
+  border-color: rgba(72, 187, 120, 0.4);
+  background: rgba(72, 187, 120, 0.08);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.btn-icon--warn-confirm:hover {
+  background: rgba(72, 187, 120, 0.2);
+  color: #48bb78;
+}
+
+.btn-icon:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Timetable status badges in Workload table */
+.tt-status {
+  display: inline-block;
+  font-size: 0.73rem;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+
+.tt-status--none {
+  color: var(--text-muted);
+  background: transparent;
+}
+
+.tt-status--empty {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+}
+
+.tt-status--generated {
+  color: #48bb78;
+  background: rgba(72, 187, 120, 0.1);
+  border: 1px solid rgba(72, 187, 120, 0.25);
+}
+
 .action-btns {
   display: flex;
   gap: 6px;
@@ -341,6 +396,17 @@ body {
   border: 1px solid var(--accent-border);
 }
 
+.badge--lab {
+  background: rgba(72, 187, 120, 0.1);
+  color: #48bb78;
+  border: 1px solid rgba(72, 187, 120, 0.3);
+}
+
+.td-muted {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
 /* ===================== Toolbar / Search ===================== */
 .toolbar {
   margin-bottom: 18px;
@@ -390,4 +456,174 @@ body {
 
 .page {
   animation: fadeIn 0.22s ease;
+}
+
+/* ===================== Faculty Timetable Modal ===================== */
+
+.faculty-tt-empty {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.faculty-tt-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.faculty-tt-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--sidebar-bg);
+}
+
+.faculty-tt-grid {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+  table-layout: fixed;
+}
+
+.faculty-tt-grid th,
+.faculty-tt-grid td {
+  border: 1px solid var(--border);
+  text-align: center;
+}
+
+.ftt-corner {
+  background: var(--card-bg);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 12px;
+  width: 100px;
+}
+
+.ftt-slot-header {
+  background: var(--card-bg);
+  padding: 12px 6px;
+  color: var(--text-secondary);
+}
+
+.ftt-break-header {
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-muted);
+  padding: 12px 6px;
+  width: 50px;
+}
+
+.ftt-slot-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.ftt-day-label {
+  background: var(--card-bg);
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  padding: 12px;
+}
+
+.ftt-cell {
+  height: 60px;
+  padding: 6px;
+  font-size: 0.8rem;
+  transition: background 0.15s;
+}
+
+.ftt-cell--break {
+  background: rgba(255, 255, 255, 0.015);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  white-space: nowrap;
+}
+
+.ftt-cell--empty {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.1);
+}
+
+.ftt-cell--filled {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ftt-cell--filled:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.ftt-cell--lab {
+  background: rgba(72, 187, 120, 0.08);
+}
+
+.ftt-cell--lab:hover {
+  background: rgba(72, 187, 120, 0.12);
+}
+
+.ftt-subject {
+  display: block;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 3px;
+  line-height: 1.2;
+}
+
+.ftt-class {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.ftt-lab-tag {
+  margin-left: 4px;
+}
+
+.faculty-tt-footer {
+  margin-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.faculty-tt-footer strong {
+  color: var(--text-primary);
+}
+
+.ftt-legend {
+  display: flex;
+  align-items: center;
+}
+
+.ftt-legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.ftt-legend-dot--theory {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.ftt-legend-dot--lab {
+  background: #48bb78;
+}
+
+.btn-icon--timetable {
+  color: #60a5fa;
+}
+.btn-icon--timetable:hover {
+  background: rgba(96, 165, 250, 0.15);
+  color: #3b82f6;
 }

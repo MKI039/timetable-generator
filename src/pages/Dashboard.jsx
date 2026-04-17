@@ -12,7 +12,7 @@ export default function Dashboard() {
     { label: 'Faculty', value: faculty.length, icon: '👤', to: '/faculty', color: 'blue' },
     { label: 'Subjects', value: subjects.length, icon: '📚', to: '/subjects', color: 'purple' },
     { label: 'Classes', value: classes.length, icon: '🏫', to: '/classes', color: 'teal' },
-    { label: 'Requirements', value: requirements.length, icon: '📋', to: '/requirements', color: 'orange' },
+    { label: 'Workload', value: requirements.length, icon: '📋', to: '/requirements', color: 'orange' },
     { label: 'Timetables', value: timetables.length, icon: '🗓️', to: '/timetable', color: 'green' },
     { label: 'Weekly Sessions', value: totalSessions, icon: '⏱️', to: '/requirements', color: 'pink' },
   ];
@@ -58,7 +58,7 @@ export default function Dashboard() {
           </Link>
           <Link to="/requirements" className="quick-card">
             <span>📋</span>
-            <span>Set Requirements</span>
+            <span>Set Workload</span>
           </Link>
           <Link to="/timetable" className="quick-card quick-card--accent">
             <span>⚡</span>

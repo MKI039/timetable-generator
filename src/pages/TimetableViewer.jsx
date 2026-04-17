@@ -20,6 +20,7 @@ export default function TimetableViewer() {
   const [newClassId, setNewClassId] = useState('');
   const [generating, setGenerating] = useState(false);
   const [warnings, setWarnings] = useState([]);
+  const [resetConfirmTtId, setResetConfirmTtId] = useState(null);
   const gridRef = useRef(null);
 
   // Sync from URL param
@@ -90,6 +91,14 @@ export default function TimetableViewer() {
     if (!window.confirm('Delete this timetable?')) return;
     await deleteTimetable(id);
     setSelectedTtId(timetables.filter((t) => t.id !== id)[0]?.id || null);
+  };
+
+  // Reset = clear all grid data but keep the timetable record
+  const handleResetTt = async (id) => {
+    const tt = timetables.find((t) => t.id === id);
+    if (!tt) return;
+    await updateTimetable({ ...tt, classTimetable: {}, facultyTimetable: {}, generatedAt: null });
+    setResetConfirmTtId(null);
   };
 
   const handleExcelExport = () => {
@@ -163,11 +172,33 @@ export default function TimetableViewer() {
               >
                 <div className="tt-list-name">🗓️ {tt.name}</div>
                 <div className="tt-list-meta">{new Date(tt.createdAt).toLocaleDateString()}</div>
-                <button
-                  className="tt-list-delete"
-                  onClick={(e) => { e.stopPropagation(); handleDeleteTt(tt.id); }}
-                  title="Delete"
-                >✕</button>
+                <div className="tt-list-actions" onClick={(e) => e.stopPropagation()}>
+                  {resetConfirmTtId === tt.id ? (
+                    <>
+                      <button
+                        className="tt-list-btn tt-list-btn--confirm"
+                        onClick={() => handleResetTt(tt.id)}
+                        title="Confirm reset"
+                      >✓</button>
+                      <button
+                        className="tt-list-btn"
+                        onClick={() => setResetConfirmTtId(null)}
+                        title="Cancel"
+                      >✕</button>
+                    </>
+                  ) : (
+                    <button
+                      className="tt-list-btn tt-list-btn--warn"
+                      onClick={() => setResetConfirmTtId(tt.id)}
+                      title="Reset timetable (clear all slots)"
+                    >🔄</button>
+                  )}
+                  <button
+                    className="tt-list-delete"
+                    onClick={() => handleDeleteTt(tt.id)}
+                    title="Delete"
+                  >✕</button>
+                </div>
               </div>
             ))
           )}

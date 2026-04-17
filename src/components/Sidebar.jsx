@@ -7,7 +7,7 @@ const NAV_ITEMS = [
   { to: '/faculty', label: 'Faculty', icon: '👤' },
   { to: '/subjects', label: 'Subjects', icon: '📚' },
   { to: '/classes', label: 'Classes', icon: '🏫' },
-  { to: '/requirements', label: 'Requirements', icon: '📋' },
+  { to: '/requirements', label: 'Workload', icon: '📋' },
   { to: '/timetable', label: 'Timetable', icon: '🗓️' },
   { to: '/settings', label: 'Settings', icon: '⚙️' },
 ];

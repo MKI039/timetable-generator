@@ -96,6 +96,30 @@
   border-color: rgba(220, 53, 69, 0.4) !important;
 }
 
+/* Lab cell: green tint */
+.tt-cell--lab {
+  background: rgba(72, 187, 120, 0.08) !important;
+}
+
+.tt-cell--lab:hover {
+  background: rgba(72, 187, 120, 0.16) !important;
+}
+
+.tt-lab-tag {
+  display: inline-block;
+  margin-left: 5px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  background: rgba(72, 187, 120, 0.18);
+  color: #48bb78;
+  border: 1px solid rgba(72, 187, 120, 0.35);
+  border-radius: 4px;
+  padding: 1px 5px;
+  vertical-align: middle;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
 .tt-subject {
   display: block;
   font-weight: 600;
