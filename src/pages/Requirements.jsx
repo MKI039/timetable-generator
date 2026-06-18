@@ -86,7 +86,7 @@ export default function Workload() {
 
   const hasEntrySlots = (req) => {
     const tt = getTimetableForClass(req.classId);
-    if (!tt?.classTimetable) return false;
+    if (!tt?.classTimetable) return false;          
     for (const days of Object.values(tt.classTimetable)) {
       for (const slots of Object.values(days)) {
         for (const cell of Object.values(slots)) {

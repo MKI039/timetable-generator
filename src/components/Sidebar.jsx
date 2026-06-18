@@ -12,7 +12,7 @@ const NAV_ITEMS = [
   { to: '/settings', label: 'Settings', icon: '⚙️' },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ theme, onToggleTheme }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
@@ -35,6 +35,9 @@ export default function Sidebar() {
         ))}
       </nav>
       <div className="sidebar-footer">
+        <button className="theme-toggle" onClick={onToggleTheme} type="button">
+          {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+        </button>
         <span>Offline · Local Storage</span>
       </div>
     </aside>

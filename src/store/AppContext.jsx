@@ -5,6 +5,7 @@ import {
   deleteFromStore,
   getSetting,
   putSetting,
+  clearStore,
 } from '../db/db';
 import { generateId, DEFAULT_SETTINGS } from '../constants/defaults';
 
@@ -231,6 +232,55 @@ export function AppProvider({ children }) {
     dispatch({ type: 'UPDATE_SETTINGS', payload: newSettings });
   }, []);
 
+  const importBackupData = useCallback(async (data) => {
+    const stores = ['faculty', 'subjects', 'classes', 'requirements', 'timetables'];
+    for (const store of stores) {
+      await clearStore(store);
+    }
+    await clearStore('settings');
+
+    if (Array.isArray(data.faculty)) {
+      for (const f of data.faculty) await putToStore('faculty', f);
+    }
+    if (Array.isArray(data.subjects)) {
+      for (const s of data.subjects) await putToStore('subjects', s);
+    }
+    if (Array.isArray(data.classes)) {
+      for (const c of data.classes) await putToStore('classes', c);
+    }
+    if (Array.isArray(data.requirements)) {
+      for (const r of data.requirements) await putToStore('requirements', r);
+    }
+    if (Array.isArray(data.timetables)) {
+      for (const t of data.timetables) await putToStore('timetables', t);
+    }
+    if (data.settings) {
+      await putSetting('appSettings', data.settings);
+    }
+
+    const [faculty, subjects, classes, requirements, timetables, savedSettings] =
+      await Promise.all([
+        getAllFromStore('faculty'),
+        getAllFromStore('subjects'),
+        getAllFromStore('classes'),
+        getAllFromStore('requirements'),
+        getAllFromStore('timetables'),
+        getSetting('appSettings'),
+      ]);
+
+    dispatch({
+      type: 'LOAD_ALL',
+      payload: {
+        faculty,
+        subjects,
+        classes,
+        requirements,
+        timetables,
+        settings: savedSettings || DEFAULT_SETTINGS,
+      },
+    });
+  }, []);
+
   const value = {
     ...state,
     addFaculty,
@@ -250,6 +300,7 @@ export function AppProvider({ children }) {
     updateTimetable,
     deleteTimetable,
     updateSettings,
+    importBackupData,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

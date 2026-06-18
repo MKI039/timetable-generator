@@ -17,6 +17,22 @@
   --success:       #48bb78;
 }
 
+:root[data-theme='light'] {
+  --bg:            #f5f7fb;
+  --sidebar-bg:    #ffffff;
+  --card-bg:       #ffffff;
+  --hover-bg:      #eef2f7;
+  --border:        #d9e2ec;
+  --text-primary:  #102033;
+  --text-secondary:#40576d;
+  --text-muted:    #7a8da0;
+  --accent:        #c96f2d;
+  --accent-subtle: rgba(201, 111, 45, 0.1);
+  --accent-border: rgba(201, 111, 45, 0.25);
+  --danger:        #c62828;
+  --success:       #2f855a;
+}
+
 /* ===================== Reset & Base ===================== */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -35,6 +51,7 @@ body {
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   line-height: 1.5;
+  transition: background 0.18s ease, color 0.18s ease;
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }

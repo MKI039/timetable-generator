@@ -92,3 +92,24 @@
   border-top: 1px solid var(--border);
   text-align: center;
 }
+
+.theme-toggle {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+.theme-toggle:hover {
+  background: var(--hover-bg);
+  color: var(--text-primary);
+  border-color: var(--accent-border);
+}

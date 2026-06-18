@@ -21,6 +21,15 @@ function shuffle(arr) {
   return a;
 }
 
+const MAX_BACKTRACK_ATTEMPTS = 5000;
+
+function sortByFewestOptions(sessions, getOptionCount) {
+  return sessions
+    .map((session) => ({ session, options: getOptionCount(session), tie: Math.random() }))
+    .sort((a, b) => a.options - b.options || a.tie - b.tie)
+    .map(({ session }) => session);
+}
+
 /**
  * Build the merged faculty schedule from all OTHER saved timetables.
  * Returns: { [facultyId]: { [day]: { [slotId]: true } } }
@@ -35,7 +44,7 @@ export function buildExistingFacultySchedule(allTimetables, excludeId = null) {
       for (const [day, slots] of Object.entries(days)) {
         if (!schedule[facultyId][day]) schedule[facultyId][day] = {};
         for (const [slotId, assignment] of Object.entries(slots)) {
-          if (assignment) schedule[facultyId][day][slotId] = true;
+          if (assignment) schedule[facultyId][day][slotId] = tt.name || 'Another Class';
         }
       }
     }
@@ -127,9 +136,6 @@ export function generateTimetable(requirements, settings, existingFacultySchedul
     }
   }
 
-  theorySessions = shuffle(theorySessions);
-  labSessions = shuffle(labSessions);
-
   const unscheduled = [];
   const warnings = [];
 
@@ -174,6 +180,34 @@ export function generateTimetable(requirements, settings, existingFacultySchedul
     !!(existingFacultySchedules[facultyId]?.[day]?.[slotId]);
 
   const isClassBusy = (classId, day, slotId) => !!classTimetable[classId]?.[day]?.[slotId];
+
+  const countPotentialTheorySlots = (session) => {
+    let count = 0;
+    for (const day of activeDays) {
+      for (const slotId of teachingSlotIds) {
+        if (!existingFacultySchedules[session.facultyId]?.[day]?.[slotId]) count += 1;
+      }
+    }
+    return count;
+  };
+
+  const countPotentialLabSlots = (session) => {
+    let count = 0;
+    for (const day of activeDays) {
+      for (const [s1, s2] of labSlotPairs) {
+        if (
+          !existingFacultySchedules[session.facultyId]?.[day]?.[s1] &&
+          !existingFacultySchedules[session.facultyId]?.[day]?.[s2]
+        ) {
+          count += 1;
+        }
+      }
+    }
+    return count;
+  };
+
+  theorySessions = sortByFewestOptions(theorySessions, countPotentialTheorySlots);
+  labSessions = sortByFewestOptions(labSessions, countPotentialLabSlots);
 
   /**
    * Find a theory slot obeying:
@@ -242,12 +276,34 @@ export function generateTimetable(requirements, settings, existingFacultySchedul
       placeLab(session, slot.day, slot.slotId1, slot.slotId2);
     } else {
       unscheduled.push(session);
-      warnings.push(`Could not schedule lab: Faculty "${session.facultyId}" → Class "${session.classId}" (Subject "${session.subjectId}")`);
+
+      let classHasFreePairs = false;
+      let facultyHasFreePairs = false;
+      for (const day of activeDays) {
+        for (const [s1, s2] of labSlotPairs) {
+          const classFree = !isClassBusy(session.classId, day, s1) && !isClassBusy(session.classId, day, s2);
+          const facultyFree = !isFacultyBusy(session.facultyId, day, s1) && !isFacultyBusy(session.facultyId, day, s2);
+          if (classFree) classHasFreePairs = true;
+          if (facultyFree) facultyHasFreePairs = true;
+        }
+      }
+      let reason = 'overlap';
+      if (!classHasFreePairs) reason = 'class_busy';
+      else if (!facultyHasFreePairs) reason = 'faculty_busy';
+
+      warnings.push({
+        type: 'lab',
+        classId: session.classId,
+        facultyId: session.facultyId,
+        subjectId: session.subjectId,
+        reason
+      });
     }
   }
 
   // --- Greedy pass for theory sessions ---
   const placed = [];
+  let backtrackAttempts = 0;
   for (const session of theorySessions) {
     const slot = findTheorySlot(session);
     if (slot) {
@@ -257,7 +313,9 @@ export function generateTimetable(requirements, settings, existingFacultySchedul
       // Backtracking: displace an already-placed theory session
       let resolved = false;
       for (const candidate of shuffle(placed)) {
+        if (backtrackAttempts >= MAX_BACKTRACK_ATTEMPTS) break;
         if (candidate.session.classId !== session.classId && candidate.session.facultyId !== session.facultyId) continue;
+        backtrackAttempts += 1;
         unplaceTheory(candidate.session, candidate.day, candidate.slotId);
         const newSlot = findTheorySlot(session);
         if (newSlot) {
@@ -276,7 +334,39 @@ export function generateTimetable(requirements, settings, existingFacultySchedul
       }
       if (!resolved) {
         unscheduled.push(session);
-        warnings.push(`Could not schedule: Faculty "${session.facultyId}" → Class "${session.classId}" (Subject "${session.subjectId}")`);
+
+        let classHasFreeSlots = false;
+        let facultyHasFreeSlots = false;
+        for (const day of activeDays) {
+          for (const slotId of teachingSlotIds) {
+            if (!isClassBusy(session.classId, day, slotId)) classHasFreeSlots = true;
+            if (!isFacultyBusy(session.facultyId, day, slotId)) facultyHasFreeSlots = true;
+          }
+        }
+
+        let hasFreeSlotOnCleanDay = false;
+        for (const day of activeDays) {
+          if (hasAnyOnDay(session.classId, session.subjectId, day)) continue;
+          for (const slotId of teachingSlotIds) {
+            if (!isClassBusy(session.classId, day, slotId) && !isFacultyBusy(session.facultyId, day, slotId)) {
+              hasFreeSlotOnCleanDay = true;
+            }
+          }
+        }
+
+        let reason = 'overlap';
+        if (!classHasFreeSlots) reason = 'class_busy';
+        else if (!facultyHasFreeSlots) reason = 'faculty_busy';
+        else if (backtrackAttempts >= MAX_BACKTRACK_ATTEMPTS) reason = 'attempt_limit';
+        else if (!hasFreeSlotOnCleanDay) reason = 'daily_limit_violation';
+
+        warnings.push({
+          type: 'theory',
+          classId: session.classId,
+          facultyId: session.facultyId,
+          subjectId: session.subjectId,
+          reason
+        });
       }
     }
   }
@@ -293,8 +383,15 @@ export function detectConflicts(classTimetable, facultyTimetable, existingFacult
     for (const [day, slots] of Object.entries(days)) {
       for (const [slotId, assignment] of Object.entries(slots)) {
         if (assignment && existingFacultySchedules[facultyId]?.[day]?.[slotId]) {
-          conflicts.push({ type: 'faculty-cross', facultyId, day, slotId,
-            message: `Faculty ${facultyId} is double-booked on ${day} slot ${slotId} (cross-timetable)` });
+          const otherTtName = existingFacultySchedules[facultyId][day][slotId];
+          conflicts.push({
+            type: 'faculty-cross',
+            facultyId,
+            day,
+            slotId,
+            otherTtName,
+            message: `Faculty is double-booked on ${day} slot ${slotId} (in "${otherTtName}")`
+          });
         }
       }
     }

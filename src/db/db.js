@@ -59,3 +59,9 @@ export async function putSetting(key, value) {
   const db = await getDB();
   await db.put('settings', { key, value });
 }
+
+export async function clearStore(storeName) {
+  const db = await getDB();
+  await db.clear(storeName);
+}
+

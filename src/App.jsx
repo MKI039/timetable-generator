@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { AppProvider } from './store/AppContext';
 import Sidebar from './components/Sidebar';
@@ -12,11 +12,20 @@ import Settings from './pages/Settings';
 import './App.css';
 
 export default function App() {
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme((current) => (current === 'dark' ? 'light' : 'dark'));
+
   return (
     <AppProvider>
       <HashRouter>
         <div className="app-layout">
-          <Sidebar />
+          <Sidebar theme={theme} onToggleTheme={toggleTheme} />
           <main className="app-main">
             <Routes>
               <Route path="/" element={<Dashboard />} />

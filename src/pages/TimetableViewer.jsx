@@ -4,13 +4,43 @@ import { useApp } from '../store/AppContext';
 import TimetableGrid from '../components/TimetableGrid';
 import Modal from '../components/Modal';
 import { generateTimetable, buildExistingFacultySchedule } from '../engine/scheduler';
+import { updateExistingTimetable } from '../engine/timetableUpdater';
 import { exportToExcel, exportToPDF } from '../utils/export';
-import { generateId } from '../constants/defaults';
 import './TimetableViewer.css';
+
+function generateInWorker(requirements, settings, existingSchedules) {
+  if (typeof Worker === 'undefined') {
+    return Promise.resolve(generateTimetable(requirements, settings, existingSchedules));
+  }
+
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(new URL('../workers/schedulerWorker.js', import.meta.url), { type: 'module' });
+    const id = crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`;
+
+    worker.onmessage = (event) => {
+      if (event.data.id !== id) return;
+      worker.terminate();
+      if (event.data.error) reject(new Error(event.data.error));
+      else resolve(event.data.result);
+    };
+    worker.onerror = (event) => {
+      worker.terminate();
+      reject(new Error(event.message || 'Scheduler worker failed.'));
+    };
+    worker.postMessage({ id, requirements, settings, existingSchedules });
+  }).catch(() => generateTimetable(requirements, settings, existingSchedules));
+}
 
 export default function TimetableViewer() {
   const { faculty, subjects, classes, requirements, timetables, settings,
           addTimetable, updateTimetable, deleteTimetable } = useApp();
+
+  const getFacultyName = (id) => faculty.find((f) => f.id === id)?.name || 'Unknown Faculty';
+  const getSubjectName = (id) => subjects.find((s) => s.id === id)?.name || 'Unknown Subject';
+  const getClassName = (id) => {
+    const c = classes.find((classObj) => classObj.id === id);
+    return c ? `${c.name}${c.section ? ` (${c.section})` : ''}` : 'Unknown Class';
+  };
 
   const [searchParams] = useSearchParams();
   const [selectedTtId, setSelectedTtId] = useState(null);
@@ -19,8 +49,11 @@ export default function TimetableViewer() {
   const [newModal, setNewModal] = useState(false);
   const [newClassId, setNewClassId] = useState('');
   const [generating, setGenerating] = useState(false);
+  const [updatingExisting, setUpdatingExisting] = useState(false);
   const [warnings, setWarnings] = useState([]);
+  const [toast, setToast] = useState(null);
   const [resetConfirmTtId, setResetConfirmTtId] = useState(null);
+  const toastTimerRef = useRef(null);
   const gridRef = useRef(null);
 
   // Sync from URL param
@@ -57,7 +90,7 @@ export default function TimetableViewer() {
       const targetRequirements = selectedTt.classId
         ? requirements.filter((r) => r.classId === selectedTt.classId)
         : requirements;
-      const result = generateTimetable(targetRequirements, settings, existingSchedules);
+      const result = await generateInWorker(targetRequirements, settings, existingSchedules);
       const updated = {
         ...selectedTt,
         classTimetable: result.classTimetable,
@@ -68,6 +101,42 @@ export default function TimetableViewer() {
       setWarnings(result.warnings || []);
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const showToast = (type, message) => {
+    setToast({ type, message });
+    window.clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = window.setTimeout(() => setToast(null), 4500);
+  };
+
+  const handleUpdateExisting = async () => {
+    if (!selectedTt) return;
+    setUpdatingExisting(true);
+    setWarnings([]);
+
+    try {
+      const result = updateExistingTimetable(selectedTt, requirements, settings, timetables);
+
+      if (result.added > 0) {
+        await updateTimetable({
+          ...result.timetable,
+          generatedAt: selectedTt.generatedAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+      }
+
+      setWarnings(result.warnings || []);
+
+      if (result.warnings.length > 0) {
+        showToast('error', `Could not place ${result.warnings.length} new session${result.warnings.length > 1 ? 's' : ''}. Check warnings for details.`);
+      } else if (result.added > 0) {
+        showToast('success', `Updated timetable with ${result.added} new session${result.added > 1 ? 's' : ''}.`);
+      } else {
+        showToast('info', 'Timetable is already up to date.');
+      }
+    } finally {
+      setUpdatingExisting(false);
     }
   };
 
@@ -107,9 +176,8 @@ export default function TimetableViewer() {
   };
 
   const handlePDFExport = async () => {
-    const el = document.getElementById('tt-export-target');
-    if (!el || !selectedTt) return;
-    await exportToPDF(el, selectedTt.name);
+    if (!selectedTt) return;
+    await exportToPDF(selectedTt, { faculty, subjects, classes, settings });
   };
 
   const entityList = viewMode === 'class'
@@ -142,18 +210,69 @@ export default function TimetableViewer() {
           >
             {generating ? '⏳ Generating...' : '⚡ Generate'}
           </button>
+          <button
+            className="btn btn-secondary"
+            onClick={handleUpdateExisting}
+            disabled={generating || updatingExisting || !selectedTt || requirements.length === 0}
+          >
+            {updatingExisting ? 'Updating...' : 'Update Existing'}
+          </button>
           <button className="btn btn-primary" onClick={() => setNewModal(true)}>
             + New Timetable
           </button>
         </div>
       </div>
 
+      {toast && (
+        <div className={`toast-message toast-message--${toast.type}`}>
+          {toast.message}
+        </div>
+      )}
+
       {warnings.length > 0 && (
         <div className="warnings-box">
-          <strong>⚠️ {warnings.length} session{warnings.length > 1 ? 's' : ''} could not be scheduled:</strong>
-          <ul>
-            {warnings.map((w, i) => <li key={i}>{w}</li>)}
-          </ul>
+          <strong>⚠️ {warnings.length} session{warnings.length > 1 ? 's' : ''} could not be scheduled due to constraints:</strong>
+          <div className="warnings-list" style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {warnings.map((w, i) => {
+              const facName = getFacultyName(w.facultyId);
+              const subName = getSubjectName(w.subjectId);
+              const clsName = getClassName(w.classId);
+
+              let reasonText = '';
+              if (w.type === 'lab') {
+                if (w.reason === 'class_busy') reasonText = `Class ${clsName} has no remaining 2-hour consecutive slots.`;
+                else if (w.reason === 'faculty_busy') reasonText = `Faculty ${facName} is fully booked during consecutive slot options.`;
+                else if (w.reason === 'no_consecutive_slots') reasonText = `No empty 2-hour consecutive slot is available for Class ${clsName} and Faculty ${facName}.`;
+                else reasonText = `No matching 2-hour consecutive slots were mutually free for Class ${clsName} and Faculty ${facName}.`;
+              } else {
+                if (w.reason === 'class_busy') reasonText = `Class ${clsName} is fully occupied with other subjects.`;
+                else if (w.reason === 'faculty_busy') reasonText = `Faculty ${facName} is fully occupied at all matching free slots.`;
+                else if (w.reason === 'no_empty_slots') reasonText = `No valid empty slot is available without breaking timetable constraints.`;
+                else if (w.reason === 'attempt_limit') reasonText = 'Scheduling stopped after reaching the safety attempt limit.';
+                else if (w.reason === 'daily_limit_violation') reasonText = `Adding this session violates the constraint of max 1 theory class of "${subName}" per day.`;
+                else reasonText = `No matching time slots were mutually free for Class ${clsName} and Faculty ${facName}.`;
+              }
+
+              return (
+                <div key={i} className="warning-card" style={{
+                  background: 'rgba(239, 68, 68, 0.08)',
+                  border: '1px solid rgba(239, 68, 68, 0.2)',
+                  borderRadius: '8px',
+                  padding: '10px 14px',
+                  fontSize: '0.82rem',
+                  color: '#f87171',
+                  textAlign: 'left'
+                }}>
+                  <div style={{ fontWeight: '600', marginBottom: '4px' }}>
+                    ❌ {w.type === 'lab' ? '🔬 Lab' : '📖 Theory'} Session: {subName} for {clsName} ({facName})
+                  </div>
+                  <div style={{ color: 'var(--text-secondary)' }}>
+                    {reasonText}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
@@ -246,6 +365,12 @@ export default function TimetableViewer() {
               )}
 
               <div ref={gridRef}>
+                {generating && (
+                  <div className="tt-generating-banner">
+                    <span className="tt-spinner" />
+                    Generating timetable...
+                  </div>
+                )}
                 <TimetableGrid
                   timetable={selectedTt}
                   viewMode={viewMode}
