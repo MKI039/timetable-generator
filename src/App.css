@@ -8,4 +8,9 @@
   flex: 1;
   min-width: 0;
   background: var(--bg);
+  transition: margin-left 0.18s ease;
+}
+
+.app-layout--collapsed .app-main {
+  margin-left: 72px;
 }

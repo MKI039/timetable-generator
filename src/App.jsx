@@ -13,19 +13,29 @@ import './App.css';
 
 export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => localStorage.getItem('sidebarCollapsed') === 'true');
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem('theme', theme);
   }, [theme]);
 
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
+
   const toggleTheme = () => setTheme((current) => (current === 'dark' ? 'light' : 'dark'));
 
   return (
     <AppProvider>
       <HashRouter>
-        <div className="app-layout">
-          <Sidebar theme={theme} onToggleTheme={toggleTheme} />
+        <div className={`app-layout${sidebarCollapsed ? ' app-layout--collapsed' : ''}`}>
+          <Sidebar
+            theme={theme}
+            collapsed={sidebarCollapsed}
+            onToggleCollapse={() => setSidebarCollapsed((current) => !current)}
+            onToggleTheme={toggleTheme}
+          />
           <main className="app-main">
             <Routes>
               <Route path="/" element={<Dashboard />} />

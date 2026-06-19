@@ -1,8 +1,41 @@
 .tt-grid-wrapper {
+  --tt-surface: #ffffff;
+  --tt-empty: #ffffff;
+  --tt-filled: #eef4fa;
+  --tt-filled-hover: #e5eef7;
+  --tt-break-header: #f3e9e2;
+  --tt-break-cell: #f7f1ed;
+  --tt-break-text: #d4631f;
+  --tt-day-text: #334b65;
+  --tt-header-text: #24384c;
+  --tt-muted: #7b8da2;
+  --tt-subject: #031f37;
+  --tt-lab: #e9f5ef;
+  --tt-lab-hover: #dff0e8;
+}
+
+:root[data-theme='dark'] .tt-grid-wrapper {
+  --tt-surface: #111f2e;
+  --tt-empty: #111f2e;
+  --tt-filled: #17283a;
+  --tt-filled-hover: #1d3248;
+  --tt-break-header: rgba(244, 162, 97, 0.12);
+  --tt-break-cell: rgba(244, 162, 97, 0.07);
+  --tt-break-text: #f4a261;
+  --tt-day-text: #8baabb;
+  --tt-header-text: #e8edf2;
+  --tt-muted: #6e879b;
+  --tt-subject: #e8edf2;
+  --tt-lab: rgba(72, 187, 120, 0.1);
+  --tt-lab-hover: rgba(72, 187, 120, 0.16);
+}
+
+.tt-grid-wrapper {
   overflow-x: auto;
   border-radius: 12px;
   border: 1px solid var(--border);
   animation: ttGridIn 0.18s ease;
+  background: var(--tt-surface);
 }
 
 .tt-grid {
@@ -21,8 +54,8 @@
 }
 
 .tt-grid thead th {
-  background: var(--sidebar-bg);
-  color: var(--text-secondary);
+  background: var(--tt-surface);
+  color: var(--tt-header-text);
   font-weight: 600;
   font-size: 0.72rem;
   padding: 8px 6px;
@@ -31,27 +64,27 @@
 }
 
 .tt-break-header {
-  background: rgba(244, 162, 97, 0.08) !important;
-  color: var(--accent) !important;
+  background: var(--tt-break-header) !important;
+  color: var(--tt-break-text) !important;
 }
 
 .tt-break-badge {
   display: block;
   font-size: 0.62rem;
-  color: var(--accent);
+  color: var(--tt-break-text);
   opacity: 0.8;
   margin-top: 2px;
 }
 
 .tt-corner {
-  color: var(--text-muted) !important;
+  color: var(--tt-muted) !important;
   font-size: 0.7rem !important;
   width: 80px;
 }
 
 .tt-day-label {
-  background: var(--sidebar-bg);
-  color: var(--text-secondary);
+  background: var(--tt-surface);
+  color: var(--tt-day-text);
   font-weight: 600;
   font-size: 0.78rem;
   padding: 0 10px;
@@ -60,8 +93,8 @@
 }
 
 .tt-day-label--today {
-  color: var(--accent);
-  background: var(--accent-subtle);
+  color: var(--tt-break-text);
+  background: var(--tt-break-header);
 }
 
 .tt-cell {
@@ -80,14 +113,14 @@
 }
 
 .tt-cell--break {
-  background: rgba(244, 162, 97, 0.06);
-  color: var(--text-muted);
+  background: var(--tt-break-cell);
+  color: var(--tt-muted);
   font-size: 0.72rem;
   cursor: default;
 }
 
 .tt-cell--empty {
-  background: transparent;
+  background: var(--tt-empty);
 }
 
 .tt-cell--empty:hover {
@@ -95,11 +128,11 @@
 }
 
 .tt-cell--filled {
-  background: rgba(99, 179, 237, 0.07);
+  background: var(--tt-filled);
 }
 
 .tt-cell--filled:hover {
-  background: rgba(99, 179, 237, 0.15);
+  background: var(--tt-filled-hover);
 }
 
 .tt-cell--conflict {
@@ -109,11 +142,11 @@
 
 /* Lab cell: green tint */
 .tt-cell--lab {
-  background: rgba(72, 187, 120, 0.08) !important;
+  background: var(--tt-lab) !important;
 }
 
 .tt-cell--lab:hover {
-  background: rgba(72, 187, 120, 0.16) !important;
+  background: var(--tt-lab-hover) !important;
 }
 
 .tt-lab-tag {
@@ -134,7 +167,7 @@
 .tt-subject {
   display: block;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--tt-subject);
   font-size: 0.78rem;
   margin-bottom: 3px;
   line-height: 1.2;
@@ -142,7 +175,7 @@
 
 .tt-faculty {
   display: block;
-  color: var(--accent);
+  color: var(--tt-break-text);
   font-size: 0.68rem;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -150,7 +183,7 @@
 }
 
 .tt-empty-label {
-  color: var(--text-muted);
+  color: var(--tt-muted);
   font-size: 0.85rem;
 }
 
@@ -174,21 +207,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.tt-slot-current,
-.tt-cell--now {
-  border-color: var(--accent) !important;
-  box-shadow: inset 0 0 0 1px var(--accent-border);
-}
-
-.tt-cell--now::after {
-  content: '';
-  position: absolute;
-  inset: 4px;
-  border: 1px solid var(--accent-border);
-  border-radius: 6px;
-  pointer-events: none;
 }
 
 @keyframes ttGridIn {

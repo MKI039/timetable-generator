@@ -118,7 +118,7 @@ export default function TimetableViewer() {
     try {
       const result = updateExistingTimetable(selectedTt, requirements, settings, timetables);
 
-      if (result.added > 0) {
+      if (result.added > 0 || result.removed > 0) {
         await updateTimetable({
           ...result.timetable,
           generatedAt: selectedTt.generatedAt || new Date().toISOString(),
@@ -130,8 +130,8 @@ export default function TimetableViewer() {
 
       if (result.warnings.length > 0) {
         showToast('error', `Could not place ${result.warnings.length} new session${result.warnings.length > 1 ? 's' : ''}. Check warnings for details.`);
-      } else if (result.added > 0) {
-        showToast('success', `Updated timetable with ${result.added} new session${result.added > 1 ? 's' : ''}.`);
+      } else if (result.added > 0 || result.removed > 0) {
+        showToast('success', `Updated timetable: added ${result.added}, removed ${result.removed}.`);
       } else {
         showToast('info', 'Timetable is already up to date.');
       }

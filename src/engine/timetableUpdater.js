@@ -81,6 +81,34 @@ function countScheduledForRequirement(classTimetable, req) {
   return { theory, labs: Math.floor(labCells / 2) };
 }
 
+function requirementKey({ classId, facultyId, subjectId }) {
+  return `${classId}::${facultyId}::${subjectId}`;
+}
+
+function collectScheduledCells(classTimetable, req, activeDays, teachingSlotIds) {
+  const theory = [];
+  const labs = new Map();
+  const dayMap = classTimetable?.[req.classId] || {};
+
+  for (const day of activeDays) {
+    for (const slotId of teachingSlotIds) {
+      const cell = dayMap?.[day]?.[slotId];
+      if (!cell || cell.subjectId !== req.subjectId || cell.facultyId !== req.facultyId) continue;
+
+      if (!cell.isLab) {
+        theory.push({ classId: req.classId, day, slotId });
+        continue;
+      }
+
+      const pairKey = [day, slotId, cell.labPair].sort().join('::');
+      if (!labs.has(pairKey)) labs.set(pairKey, []);
+      labs.get(pairKey).push({ classId: req.classId, day, slotId });
+    }
+  }
+
+  return { theory, labs: [...labs.values()] };
+}
+
 function createMissingSessions(classTimetable, requirements) {
   const sessions = [];
 
@@ -116,10 +144,53 @@ export function updateExistingTimetable(timetable, requirements, settings, allTi
   const targetRequirements = timetable.classId
     ? requirements.filter((req) => req.classId === timetable.classId)
     : requirements;
+  const targetRequirementKeys = new Set(targetRequirements.map(requirementKey));
 
   for (const req of targetRequirements) {
     initClass(updated.classTimetable, req.classId, activeDays, teachingSlotIds);
     initFaculty(updated.facultyTimetable, req.facultyId, activeDays, teachingSlotIds);
+  }
+
+  let removed = 0;
+
+  const clearClassSlot = (classId, day, slotId) => {
+    const cell = updated.classTimetable[classId]?.[day]?.[slotId];
+    if (!cell) return;
+
+    updated.classTimetable[classId][day][slotId] = null;
+    if (updated.facultyTimetable[cell.facultyId]?.[day]?.[slotId]) {
+      updated.facultyTimetable[cell.facultyId][day][slotId] = null;
+    }
+    removed += 1;
+  };
+
+  for (const classId of Object.keys(updated.classTimetable)) {
+    if (timetable.classId && classId !== timetable.classId) continue;
+    for (const day of Object.keys(updated.classTimetable[classId] || {})) {
+      for (const slotId of Object.keys(updated.classTimetable[classId][day] || {})) {
+        const cell = updated.classTimetable[classId][day][slotId];
+        if (!cell) continue;
+        if (!targetRequirementKeys.has(requirementKey({ classId, facultyId: cell.facultyId, subjectId: cell.subjectId }))) {
+          clearClassSlot(classId, day, slotId);
+        }
+      }
+    }
+  }
+
+  for (const req of targetRequirements) {
+    const scheduled = collectScheduledCells(updated.classTimetable, req, activeDays, teachingSlotIds);
+    const allowedTheory = Number(req.hoursPerWeek || 0);
+    const allowedLabs = Number(req.labHours || 0);
+
+    for (const cell of scheduled.theory.slice(allowedTheory)) {
+      clearClassSlot(cell.classId, cell.day, cell.slotId);
+    }
+
+    for (const labCells of scheduled.labs.slice(allowedLabs)) {
+      for (const cell of labCells) {
+        clearClassSlot(cell.classId, cell.day, cell.slotId);
+      }
+    }
   }
 
   const { theoryDayUsed, labDayUsed, mark } = buildDayTrackers(updated.classTimetable);
@@ -184,15 +255,18 @@ export function updateExistingTimetable(timetable, requirements, settings, allTi
   };
 
   const findLabSlot = (session) => {
-    for (const day of activeDays) {
-      for (const [slotId1, slotId2] of labSlotPairs) {
-        if (
-          !isClassBusy(session.classId, day, slotId1) &&
-          !isClassBusy(session.classId, day, slotId2) &&
-          !isFacultyBusy(session.facultyId, day, slotId1) &&
-          !isFacultyBusy(session.facultyId, day, slotId2)
-        ) {
-          return { day, slotId1, slotId2 };
+    for (const requireCleanDay of [true, false]) {
+      for (const day of activeDays) {
+        if (requireCleanDay && hasAnyOnDay(session.classId, session.subjectId, day)) continue;
+        for (const [slotId1, slotId2] of labSlotPairs) {
+          if (
+            !isClassBusy(session.classId, day, slotId1) &&
+            !isClassBusy(session.classId, day, slotId2) &&
+            !isFacultyBusy(session.facultyId, day, slotId1) &&
+            !isFacultyBusy(session.facultyId, day, slotId2)
+          ) {
+            return { day, slotId1, slotId2 };
+          }
         }
       }
     }
@@ -222,5 +296,5 @@ export function updateExistingTimetable(timetable, requirements, settings, allTi
     }
   }
 
-  return { timetable: updated, warnings, added, missing: sessions.length };
+  return { timetable: updated, warnings, added, removed, missing: sessions.length };
 }

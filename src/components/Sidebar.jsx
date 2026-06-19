@@ -12,12 +12,20 @@ const NAV_ITEMS = [
   { to: '/settings', label: 'Settings', icon: '⚙️' },
 ];
 
-export default function Sidebar({ theme, onToggleTheme }) {
+export default function Sidebar({ theme, collapsed, onToggleCollapse, onToggleTheme }) {
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar${collapsed ? ' sidebar--collapsed' : ''}`}>
       <div className="sidebar-brand">
         <span className="sidebar-logo">📅</span>
         <span className="sidebar-title">TimeTable<br /><span className="sidebar-sub">Generator</span></span>
+        <button
+          className="sidebar-collapse-btn"
+          onClick={onToggleCollapse}
+          type="button"
+          title={collapsed ? 'Expand menu' : 'Collapse menu'}
+        >
+          {collapsed ? '›' : '‹'}
+        </button>
       </div>
       <nav className="sidebar-nav">
         {NAV_ITEMS.map((item) => (
@@ -25,6 +33,7 @@ export default function Sidebar({ theme, onToggleTheme }) {
             key={item.to}
             to={item.to}
             end={item.to === '/'}
+            title={collapsed ? item.label : undefined}
             className={({ isActive }) =>
               `sidebar-link${isActive ? ' sidebar-link--active' : ''}`
             }
@@ -36,7 +45,7 @@ export default function Sidebar({ theme, onToggleTheme }) {
       </nav>
       <div className="sidebar-footer">
         <button className="theme-toggle" onClick={onToggleTheme} type="button">
-          {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          {collapsed ? (theme === 'dark' ? '☼' : '☾') : (theme === 'dark' ? 'Light mode' : 'Dark mode')}
         </button>
         <span>Offline · Local Storage</span>
       </div>
