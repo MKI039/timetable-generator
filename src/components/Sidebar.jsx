@@ -47,7 +47,7 @@ export default function Sidebar({ theme, collapsed, onToggleCollapse, onToggleTh
         <button className="theme-toggle" onClick={onToggleTheme} type="button">
           {collapsed ? (theme === 'dark' ? '☼' : '☾') : (theme === 'dark' ? 'Light mode' : 'Dark mode')}
         </button>
-        <span>Offline · Local Storage</span>
+        <span>v 2.2 · Local Storage</span>
       </div>
     </aside>
   );
